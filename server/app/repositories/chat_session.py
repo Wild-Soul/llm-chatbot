@@ -1,6 +1,6 @@
-from .base import BaseRepository
-from ..models import ChatSession
 from datetime import datetime
+from app.models import ChatSession
+from .base import BaseRepository
 
 class ChatSessionRepository(BaseRepository[ChatSession]):
     def activate_session(self, session_id: str) -> ChatSession:

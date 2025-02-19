@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 
 class ChatSessionCreate(BaseModel):
@@ -34,3 +34,7 @@ class MessageResponse(MessageBase):
 
     class Config:
         from_attributes = True
+
+class ErrorResponse(BaseModel):
+    message: str
+    error_code: Optional[str] = None

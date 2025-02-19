@@ -1,23 +1,13 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, Boolean, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-
-Base = declarative_base()
-
-class ChatSession(Base):
-    __tablename__ = "chat_sessions"
-
-    id = Column(String, primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    last_active = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    is_active = Column(Boolean, default=True)
+from .base import Base
 
 class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    session_id = Column(String, ForeignKey("chat_session.id"), index=True, nullable=False)
+    session_id = Column(String, ForeignKey("chat_sessions.id"), index=True, nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -26,4 +16,17 @@ class Message(Base):
     parent_message_id = Column(Integer, ForeignKey("messages.id"), nullable=True) # to simulate "replied to" scenario
 
     session = relationship("ChatSession")
-    replies = relationship("Message", backref="parent_message")
+    replies = relationship("Message", backref="parent_message", remote_side=[id])
+
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "session_id": self.session_id,
+            "content": self.content,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "is_deleted": self.is_deleted,
+            "is_bot_message": self.is_bot_message,
+            "parent_message_id": self.parent_message_id,
+        }

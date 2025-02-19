@@ -1,11 +1,10 @@
 from fastapi import WebSocket
 from sqlalchemy.orm import Session
 from typing import Dict
-from ..schemas import MessageCreate, MessageEdit
-from ..services.chat_service import ChatService
-from ..repositories.chat_session import ChatSessionRepository
-from ..repositories.message import MessageRepository
-from ..models import ChatSession, Message
+from app.schemas import MessageCreate, MessageEdit
+from app.services import ChatService
+from app.repositories import ChatSessionRepository, MessageRepository
+from app.models import ChatSession, Message
 
 class ChatController:
     def __init__(self):
@@ -38,7 +37,7 @@ class ChatController:
             messages = await service.create_message(
                 MessageCreate(content=data['content'], session_id=session_id)
             )
-            return {'type': 'message', 'messages': messages}
+            return {'type': 'message', 'messages': list(messages)}
         
         elif data['type'] == 'edit':
             messages = await service.edit_message(
@@ -46,7 +45,7 @@ class ChatController:
                 MessageEdit(content=data['content']),
                 session_id
             )
-            return {'type': 'edit', 'messages': messages}
+            return {'type': 'edit', 'messages': list(messages)}
         
         elif data['type'] == 'delete':
             message = await service.delete_message(data['message_id'], session_id)

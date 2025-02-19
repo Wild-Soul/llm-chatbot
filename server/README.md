@@ -15,7 +15,22 @@ You need to develop a chat widget that allows users to send messages to a chatbo
 * The chatbot should persist the state, ie. it should maintain a continuous conversation state.
 
 
-* I want you to build the backend APIs for above feature, using Python and FastAPI. As for data storage and persistence prefer to use PostgreSQL, come up with a data-model for this.
-* Be minimalistic with additional dependencies.
-* For chatbot response I would say that this is going to be forwared to another microservice maybe through a message bus like rabbitMQ. And this other service is going to generate and send the response, for now let it be a static response to any message: "Work in progress, stay tuned!".
-* Additonally make sure to cover up all edge cases.
+- Running postgres (not detached):
+```
+docker run \
+  -e POSTGRES_PASSWORD="password" \
+  -p 5432:5432 \
+  --name my_postgres \
+  postgres:16.7-alpine3.21
+```
+
+- Running pgAdmin (not detached):
+```
+docker run \
+  -p 80:80 \
+  --name pgadmin \
+  -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
+  -e PGADMIN_DEFAULT_PASSWORD="admin" \
+  --link my_postgres:postgres \
+  dpage/pgadmin4:9.0.0
+```

@@ -1,9 +1,8 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from threading import Lock
-from ..repositories.chat_session import ChatSessionRepository
-from ..repositories.message import MessageRepository
-from ..schemas import MessageCreate, MessageEdit
-from ..models import Message
+from app.models import Message
+from app.repositories import ChatSessionRepository, MessageRepository
+from app.schemas import MessageCreate, MessageEdit
 
 class ChatService:
     _instance: Optional['ChatService'] = None
@@ -29,15 +28,22 @@ class ChatService:
         self.message_repo = message_repo
     
     async def get_or_create_session(self, session_id: str):
-        session = self.chat_session_repo(session_id)
+        session = self.chat_session_repo.get(session_id)
         if not session:
             session = self.chat_session_repo.create(id=session_id)
         else:
             session = self.chat_session_repo.activate_session(session_id)
         
         return session
+
+    async def deactivate_session(self, session_id: str):
+        session = self.chat_session_repo.get(session_id)
+        if session:
+            session = self.chat_session_repo.deactivate_session(session_id)
+        
+        return session
     
-    async def create_message(self, message: MessageCreate) -> Tuple[Message, Message]:
+    async def create_message(self, message: MessageCreate) -> Tuple[Dict, Dict]:
         if not self.chat_session_repo or not self.message_repo:
             raise RuntimeError("Service not initialized with repositories")
         
@@ -56,7 +62,7 @@ class ChatService:
             parent_message_id=user_message.id
         )
 
-        return user_message, bot_message
+        return user_message.as_dict(), bot_message.as_dict()
 
     async def edit_message(self, message_id: int, message: MessageEdit, session_id: str) -> Tuple[Message, Message]:
         # Get and update the message
@@ -83,7 +89,7 @@ class ChatService:
             parent_message_id=message_id
         )
 
-        return updated_message, new_bot_response
+        return updated_message.as_dict(), new_bot_response.as_dict()
 
     async def delete_message(self, message_id: int, session_id: str) -> Message:
         message = self.message_repo.get(message_id)
@@ -94,7 +100,7 @@ class ChatService:
         if message.is_deleted or message.is_bot_message:
             raise ValueError("Cannot delete this message")
         
-        return self.message_repo.update(message_id, is_deleted=True)
+        return self.message_repo.update(message_id, is_deleted=True).as_dict()
     
     async def get_session_messages(self, session_id: str) -> List[Message]:
         return self.message_repo.get_session_messages(session_id)
