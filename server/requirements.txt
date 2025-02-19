@@ -4,4 +4,5 @@ sqlalchemy==2.0.38
 psycopg2-binary==2.9.10
 pydantic==2.10.6
 python-dotenv==1.0.1
-aio-pika==9.5.4
+aio-pika==9.5.4 # TODO: usage not definite, based on HLD change we may remove this dependency.
+websockets==15.0
