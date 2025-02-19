@@ -17,6 +17,9 @@ class ChatSessionResponse(BaseModel):
 class MessageBase(BaseModel):
     content: str
 
+class MessageCreate(MessageBase):
+    session_id: str
+
 class MessageEdit(MessageBase):
     pass
 
